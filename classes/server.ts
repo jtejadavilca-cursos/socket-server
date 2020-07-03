@@ -2,7 +2,7 @@ import express from 'express';
 import { SERVER_PORT } from '../global/environment';
 import socketIO from 'socket.io';
 import http from 'http';
-import router from '../routes/router';
+import * as routes from '../routes/router';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
@@ -51,8 +51,10 @@ export default class Server {
             socket.mensaje(client, this.io);
 
             // Escuchar desconexión
-            socket.desconectar(client);
+            socket.desconectar(client, this.io);
     
+            // Escuchar obtención de usuarios
+            socket.obtenerUsuarios(client, this.io);
         });
     }
 
@@ -80,6 +82,6 @@ export default class Server {
     private configRoutes() {
         this.app.use(bodyParser.urlencoded({extended: false}));
         this.app.use(bodyParser.json());
-        this.app.use(router);
+        this.app.use(routes.default);
     }
 }

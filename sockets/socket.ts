@@ -13,14 +13,21 @@ export const conectarCliente = ( client: Socket, io: socketIO.Server ) => {
 
 export const configUsuario = ( client: Socket, io: socketIO.Server ) => {
     client.on('configurar-usuario', (payload, callback) => {
-        usuariosConectados.actualizarNombre(client.id, payload.nombre);
-        callback(payload);
+
+        if( payload.nombre === 'sin-nombre' ) {
+            usuariosConectados.borrarUsuario(client.id);
+        } else {
+            usuariosConectados.actualizarNombre(client.id, payload.nombre);
+            callback(payload);
+        }
+        io.emit('usuarios-activos', usuariosConectados.getLista());
     });
 }
 
-export const desconectar = ( client: Socket ) => {
+export const desconectar = ( client: Socket, io: socketIO.Server ) => {
     client.on('disconnect', () => {
         const usuarioBorrado = usuariosConectados.borrarUsuario(client.id);
+        io.emit('usuarios-activos', usuariosConectados.getLista());
     });
 }
 
@@ -31,3 +38,8 @@ export const mensaje = ( client: Socket, io: socketIO.Server ) => {
 }
 
 
+export const obtenerUsuarios = ( client: Socket, io: socketIO.Server ) => {
+    client.on( 'obtener-usuarios', () => {
+        io.to(client.id).emit('usuarios-activos', usuariosConectados.getLista());
+    });
+}
